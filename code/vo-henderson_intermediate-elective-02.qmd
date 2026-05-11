@@ -1,0 +1,29 @@
+---
+title: "Intermediate elective 2"
+author: "Henderson Vo"
+date: 2026-05-15
+format: pdf
+execute:
+  warning: false
+  message: false
+---
+
+# Set up
+
+## Packages
+```{r}
+# general use
+library(tidyverse)
+library(ggtext)
+
+# file organization
+library(here)
+```
+
+## Data
+```{r}
+veg <- read_csv(here("data", "veg.csv"))
+metadata <- read_csv(here("data", "vp_veg_metadata.csv"))
+```
+
+
