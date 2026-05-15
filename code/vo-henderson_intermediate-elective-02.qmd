@@ -50,15 +50,12 @@ nonnative_spp <- veg |>
            cover_category == "NON-NATIVE COVER") |> 
 # pull to extract data frame column as a vector
   pull(psoc)
-
-# sample of ten rows
-sample(invasive_spp, 10)
 ```
 
 ```{r}
 # creating new object from veg
 veg_explicit0 <- veg |> 
-  # filter all occurrences where transect_name contains GL
+  # filter all occurrences where site is ncos
   filter(site == "ncos") |> 
   mutate(month = month(date)) |> 
   unite("year_month", year, month, sep = "-", remove = FALSE) |> 
@@ -72,7 +69,7 @@ veg_explicit0 <- veg |>
            # fill values of percent cover with 0
            fill = list(percent_cover = 0)
            ) |>
-  # group by year, pool, and psoc
+  # group by year, pool, and native
   group_by(year_month, year, transect_name, native) |>
   # calculate total percent cover across all quads
   summarize(sum_pc = sum(percent_cover, na.rm = TRUE)) |>
@@ -155,29 +152,36 @@ Make sure all your code is annotated, and that the output is showing.
 
 At the end of this section, include code to save your final figure as a .jpg or .png file.
 
+```{r}
+year_labels <- veg_wider %>%
+  mutate(x = sin(len) * 11,
+         y = cos(len) * 11,
+         angle = c(seq(90, 0, length.out = 10),
+                   seq(360, 270, length.out = 9))) %>%
+  select(year_month, x, y, angle)
+
+```
 
 ```{r}
-titles = tibble(
+titles <- tibble(
   x = -1,
   y = 0, 
   label = "<span style='color:white;font-size:30pt'>**Native Vegetation Cover<br>
-  at NCOS**</span><br>
+  across NCOS**</span><br>
 <span style='color:white;font-size:18pt'>*2021 - 2025*</span><br><br>
-  <span style='color:white;font-size:12pt'>The proportion of enrolled students that are</span><span style='color:#e5e3dc;font-size:12pt'> women</span><br> 
-  <span style='color:white;font-size:12pt'>has consistently been larger than the proportion<br>
-  that are</span><span style='color:#13986f;font-size:12pt'> men</span><span style='color:white;font-size:12pt'> throughout the history of HBCUs.</span>"
+<span style='color:white;font-size:12pt'>The proportion of vegetation cover that is<br><span style='color:#4CAF50'>native</span> has fluctuated over time, being lower on average<br>during early summer months.</span>."
 )
 
 ```
 
 ```{r}
 ggplot(data = final_veg) + 
-  # male lines 
+  # native lines 
   geom_segment(aes(x = x_native, y = y_native,
                  xend = x_native_end, yend = y_native_end),
                size = 2,
                color = "#13986f") + 
-  # female lines
+  # nonnative lines
   geom_segment(aes(x = x_nonnative, y = y_nonnative,
                  xend = x_nonnative_end, yend = y_nonnative_end),
                size = 2,
@@ -189,17 +193,17 @@ ggplot(data = final_veg) +
                 hjust = 1,
                 fill = NA,
                 color = NA) +
-  # Year Label
+  # Year-month Label
   geom_text(data = year_labels,
-            aes(x = x, y = y, label = year,
+            aes(x = x, y = y, label = year_month,
                 angle = angle),
             family = "Literata",
             color = "white") +
   xlim(-15, 11) +
-  labs(caption = "Source: National Center for Education Statistics | Viz: Ijeamaka Anyene - @ijeamaka_a") +
+  labs(caption = "Source: Cheadle Center for Biodiversity and Ecological Restoration | Viz: Henderson Vo | Template: Ijeamaka Anyene - @ijeamaka_a") +
   coord_fixed() +
   theme_void() +
-  theme(plot.background = element_rect(fill = "#87a3c0"),
+  theme(plot.background = element_rect(fill = "#33494f"),
         plot.margin = margin(4, 4, 4, 4, unit = "pt"),
         panel.background = element_rect(fill = "#33494f"),
         plot.caption = element_text(color = "white",
@@ -216,8 +220,11 @@ ggplot(data = final_veg) +
 In 1-3 sentences each, describe:
 
 - your process of using someone else’s code to create a visualization
+  - I first looked at Ijeamaka Anyene's code to see how she structured her dataset, so that I could also structure my data the same way. I then went through different wrangling steps to match the structure of the hbcu data so that I would be able to reuse the rest of the code. From there, it was a matter to changing labels to describe the vegetation dataset and the trends from it.  
 - challenges you encountered as you made your visualization
+  - Wrangling the vegetation dataset was definitely the most difficult part because I had to mentally work backwards from the variables I knew I needed at the end. The caption (which is still not perfect) was also difficult to format since I am not familiar with html scripting or the richtext geometry. 
 - how your visualization differs from visualizations you made in class, for assignments, or for a previous elective
+  - One major way that this visualization differs from class visualizations is that this one doesn't use obvious axes; it's like a column plot but it's curved around a central point. There is also much more flexibility with titling and captioning using the richtext geometry than the traditional `labs()`. 
 
 
 
