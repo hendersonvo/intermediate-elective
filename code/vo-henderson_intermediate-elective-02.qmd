@@ -160,13 +160,12 @@ At the end of this section, include code to save your final figure as a .jpg or 
 titles = tibble(
   x = -1,
   y = 0, 
-  label = "<span style='color:white;font-size:30pt'>**Historically Black<br>
-  Colleges and<br>
-  Universities**</span><br>
-<span style='color:white;font-size:18pt'>*1976 - 2015 Enrollment*</span><br><br>
-  <span style='color:white;font-size:12pt'>The proportion of enrolled students that are</span><span style='color:#9e8666;font-size:12pt'> women</span><br> 
+  label = "<span style='color:white;font-size:30pt'>**Native Vegetation Cover<br>
+  at NCOS**</span><br>
+<span style='color:white;font-size:18pt'>*2021 - 2025*</span><br><br>
+  <span style='color:white;font-size:12pt'>The proportion of enrolled students that are</span><span style='color:#e5e3dc;font-size:12pt'> women</span><br> 
   <span style='color:white;font-size:12pt'>has consistently been larger than the proportion<br>
-  that are</span><span style='color:#91a559;font-size:12pt'> men</span><span style='color:white;font-size:12pt'> throughout the history of HBCUs.</span>"
+  that are</span><span style='color:#13986f;font-size:12pt'> men</span><span style='color:white;font-size:12pt'> throughout the history of HBCUs.</span>"
 )
 
 ```
@@ -177,12 +176,12 @@ ggplot(data = final_veg) +
   geom_segment(aes(x = x_native, y = y_native,
                  xend = x_native_end, yend = y_native_end),
                size = 2,
-               color = "#91a559") + 
+               color = "#13986f") + 
   # female lines
   geom_segment(aes(x = x_nonnative, y = y_nonnative,
                  xend = x_nonnative_end, yend = y_nonnative_end),
                size = 2,
-               color = "#9e8666") + 
+               color = "#e5e3dc") + 
   # Title
   geom_richtext(data = titles,
                 aes(x = x, y = y, label = label),
@@ -202,7 +201,7 @@ ggplot(data = final_veg) +
   theme_void() +
   theme(plot.background = element_rect(fill = "#87a3c0"),
         plot.margin = margin(4, 4, 4, 4, unit = "pt"),
-        panel.background = element_rect(fill = "#4D5a4D"),
+        panel.background = element_rect(fill = "#33494f"),
         plot.caption = element_text(color = "white",
                                     family = "Literata",
                                     size = 7)
