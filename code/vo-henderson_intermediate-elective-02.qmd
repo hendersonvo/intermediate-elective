@@ -55,7 +55,76 @@ nonnative_spp <- veg |>
 sample(invasive_spp, 10)
 ```
 
+```{r}
+# creating new object from veg
+veg_explicit0 <- veg |> 
+  # filter all occurrences where transect_name contains GL
+  filter(site == "ncos") |> 
+  mutate(month = month(date)) |> 
+  unite("year_month", year, month, sep = "-", remove = FALSE) |> 
+  mutate(native = case_when(
+    psoc %in% native_spp ~ "native",
+    psoc %in% nonnative_spp ~ "non_native",
+    .default = "other"
+  )) |> 
+  # complete all possible combinations of year, pool, psoc and distance
+  complete(year_month, transect_name, psoc, transect_distance,
+           # fill values of percent cover with 0
+           fill = list(percent_cover = 0)
+           ) |>
+  # group by year, pool, and psoc
+  group_by(year_month, year, transect_name, native) |>
+  # calculate total percent cover across all quads
+  summarize(sum_pc = sum(percent_cover, na.rm = TRUE)) |>
+  # ungroup the data frame
+  ungroup() |>
+  # create a new column called year_pool from year and transect name
+  unite("year_pool", year, transect_name, remove = TRUE) |> 
+  # join with metadata data frame
+  left_join(metadata, by = "year_pool") |> 
+  # calculate mean percent cover from total percent cover/number of quadrats
+  mutate(mean_pc = sum_pc/num_quad) |> 
+  filter(!str_detect(year_pool, "NA"),
+         native != "other") |> 
+  group_by(year_month, native) |> 
+  summarize(mean_pc_sum = sum(mean_pc)) |> 
+  ungroup()
+```
 
+```{r}
+veg_wider <- veg_explicit0 |> 
+  pivot_wider(
+    names_from = native,
+    values_from = mean_pc_sum
+  ) |> 
+  mutate(perc_native = native / (native + non_native) * 10,
+         perc_nonnative = non_native / (native + non_native) * 10)
+```
+
+```{r}
+veg_wider <- veg_wider |> 
+  mutate(len = seq(0, pi, length.out = 19),
+         x = sin(len),
+         y = cos(len),
+         xend = sin(len) * 10,
+         yend = cos(len) * 10,
+         y_range = yend - y,
+         x_range = xend - x) 
+```
+
+```{r}
+final_veg = veg_wider |> 
+  transmute(year_month = year_month,
+         x_native = x,
+         x_native_end = x + ((perc_native * x_range) / 10),
+         y_native = y,
+         y_native_end = y + ((perc_native * y_range) / 10),
+         native_label = perc_native * 10,
+         x_nonnative = x_native_end,
+         x_nonnative_end = xend,
+         y_nonnative = y_native_end,
+         y_nonnative_end = yend)
+```
 
 # Problems
 
@@ -85,6 +154,62 @@ Then, code the figure you decided to create.
 Make sure all your code is annotated, and that the output is showing.
 
 At the end of this section, include code to save your final figure as a .jpg or .png file.
+
+
+```{r}
+titles = tibble(
+  x = -1,
+  y = 0, 
+  label = "<span style='color:white;font-size:30pt'>**Historically Black<br>
+  Colleges and<br>
+  Universities**</span><br>
+<span style='color:white;font-size:18pt'>*1976 - 2015 Enrollment*</span><br><br>
+  <span style='color:white;font-size:12pt'>The proportion of enrolled students that are</span><span style='color:#9e8666;font-size:12pt'> women</span><br> 
+  <span style='color:white;font-size:12pt'>has consistently been larger than the proportion<br>
+  that are</span><span style='color:#91a559;font-size:12pt'> men</span><span style='color:white;font-size:12pt'> throughout the history of HBCUs.</span>"
+)
+
+```
+
+```{r}
+ggplot(data = final_veg) + 
+  # male lines 
+  geom_segment(aes(x = x_native, y = y_native,
+                 xend = x_native_end, yend = y_native_end),
+               size = 2,
+               color = "#91a559") + 
+  # female lines
+  geom_segment(aes(x = x_nonnative, y = y_nonnative,
+                 xend = x_nonnative_end, yend = y_nonnative_end),
+               size = 2,
+               color = "#9e8666") + 
+  # Title
+  geom_richtext(data = titles,
+                aes(x = x, y = y, label = label),
+                family = "Literata",
+                hjust = 1,
+                fill = NA,
+                color = NA) +
+  # Year Label
+  geom_text(data = year_labels,
+            aes(x = x, y = y, label = year,
+                angle = angle),
+            family = "Literata",
+            color = "white") +
+  xlim(-15, 11) +
+  labs(caption = "Source: National Center for Education Statistics | Viz: Ijeamaka Anyene - @ijeamaka_a") +
+  coord_fixed() +
+  theme_void() +
+  theme(plot.background = element_rect(fill = "#87a3c0"),
+        plot.margin = margin(4, 4, 4, 4, unit = "pt"),
+        panel.background = element_rect(fill = "#4D5a4D"),
+        plot.caption = element_text(color = "white",
+                                    family = "Literata",
+                                    size = 7)
+        )
+
+```
+
 
 
 ## 4. Describe your process
