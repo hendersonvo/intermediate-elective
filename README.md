@@ -2,7 +2,7 @@
 
 # General information
 
-# Data and code information
+# Data and file information
 
 # Rendered output
 

@@ -26,4 +26,77 @@ veg <- read_csv(here("data", "veg.csv"))
 metadata <- read_csv(here("data", "vp_veg_metadata.csv"))
 ```
 
+### Data cleaning and wrangling
+
+```{r}
+#| label: native-vector
+
+# creating new vector from veg
+native_spp <- veg |> 
+  # filter all occurrences where cover catecory is native
+  filter(site == "ncos" &
+           cover_category == "NATIVE COVER") |> 
+# pull to extract data frame column as a vector
+  pull(psoc)
+```
+
+```{r}
+#| label: nonnative-vector
+
+# creating new vector from veg
+nonnative_spp <- veg |> 
+  # filter all occurrences where cover category is non-native
+  filter(site == "ncos" &
+           cover_category == "NON-NATIVE COVER") |> 
+# pull to extract data frame column as a vector
+  pull(psoc)
+
+# sample of ten rows
+sample(invasive_spp, 10)
+```
+
+
+
+# Problems
+
+## 1. Explain your inspiration
+
+In 1-2 sentences each, describe:
+
+- which visualization you chose for your inspiration
+  - For my inspiration piece, I selected Ijeamaka Anyene’s “Historically Black Colleges and Universities”.
+- why it makes sense for your dataset of choice
+  - This visualization makes sense for the vegetation dataset since we can also create a binary variable, "native/nonnative" instead of Ayene's "female/male". It also makes sense to see how the proportion of native to nonnative vegetation cover changes over time to reflect the outcomes of restoration efforts over time. 
+- which variables from your dataset will be shown in your visualization, and what visual components they map onto (axes, shapes, colors, etc.)
+  - The variables that will be shown in my visualization are: native/nonnative cover and month-year. The native/nonnative cover will map onto the bars, and each bar will represent one month-year.
+
+## 2. Plan your figure
+Sketch what your figure would look like following your inspiration.
+
+
+![Initial figure sketch](../images/intermediate_sketch.png)
+
+## 3. Code your figure
+
+Clean/wrangle your data as needed.
+
+Then, code the figure you decided to create.
+
+Make sure all your code is annotated, and that the output is showing.
+
+At the end of this section, include code to save your final figure as a .jpg or .png file.
+
+
+## 4. Describe your process
+
+In 1-3 sentences each, describe:
+
+- your process of using someone else’s code to create a visualization
+- challenges you encountered as you made your visualization
+- how your visualization differs from visualizations you made in class, for assignments, or for a previous elective
+
+
+
+
+
 
