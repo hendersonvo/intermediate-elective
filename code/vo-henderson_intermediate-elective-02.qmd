@@ -213,7 +213,15 @@ ggplot(data = final_veg) +
 
 ```
 
+```{r}
+ggsave("2026_05_ncos.png", 
+       plot = last_plot(), 
+       device = "png", 
+       path = here("outputs"),
+       width = 8, 
+       height = 6)
 
+```
 
 ## 4. Describe your process
 
