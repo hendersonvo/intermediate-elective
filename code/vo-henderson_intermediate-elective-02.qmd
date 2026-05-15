@@ -12,17 +12,34 @@ execute:
 
 ## Packages
 ```{r}
+#| label: packages
 # general use
 library(tidyverse)
 library(ggtext)
 
 # file organization
 library(here)
+
+# fonts
+library(showtext)
+```
+
+## Fonts
+
+```{r}
+#| label: adding-font
+# add Literata font
+font_add_google("Literata", "Literata")
+# automatically use in figures
+showtext_auto()
 ```
 
 ## Data
 ```{r}
+#| label: data
+# vegetation data
 veg <- read_csv(here("data", "veg.csv"))
+# vegetation metadata
 metadata <- read_csv(here("data", "vp_veg_metadata.csv"))
 ```
 
@@ -53,12 +70,16 @@ nonnative_spp <- veg |>
 ```
 
 ```{r}
+#| label: cleaning-veg
 # creating new object from veg
 veg_explicit0 <- veg |> 
   # filter all occurrences where site is ncos
   filter(site == "ncos") |> 
-  mutate(month = month(date)) |> 
+  # create a column for month
+  mutate(month = month(date)) |>
+  # create a year_month combined columns
   unite("year_month", year, month, sep = "-", remove = FALSE) |> 
+  # create a column for native status
   mutate(native = case_when(
     psoc %in% native_spp ~ "native",
     psoc %in% nonnative_spp ~ "non_native",
@@ -81,25 +102,38 @@ veg_explicit0 <- veg |>
   left_join(metadata, by = "year_pool") |> 
   # calculate mean percent cover from total percent cover/number of quadrats
   mutate(mean_pc = sum_pc/num_quad) |> 
+  # remove null rows and "other" native status
   filter(!str_detect(year_pool, "NA"),
          native != "other") |> 
+  # group by year_month and native status
   group_by(year_month, native) |> 
+  # sum the mean percent cover
   summarize(mean_pc_sum = sum(mean_pc)) |> 
+  # ungroup
   ungroup()
 ```
 
 ```{r}
+#| label: veg-wider
+# create a new object from veg_explicit0
 veg_wider <- veg_explicit0 |> 
+  # pivot to a wider data frame
   pivot_wider(
+    # native status as columns
     names_from = native,
+    # sum of mean_pc as values
     values_from = mean_pc_sum
   ) |> 
+  # calculate relative percent coverage of native and nonnative
   mutate(perc_native = native / (native + non_native) * 10,
          perc_nonnative = non_native / (native + non_native) * 10)
 ```
 
 ```{r}
+#| label: veg-wider-modify
+# modify veg_wider further
 veg_wider <- veg_wider |> 
+  # create new columns for visualization parameters
   mutate(len = seq(0, pi, length.out = 19),
          x = sin(len),
          y = cos(len),
@@ -110,17 +144,27 @@ veg_wider <- veg_wider |>
 ```
 
 ```{r}
+#| label: final-veg
+# create a new object from veg_wider
 final_veg = veg_wider |> 
+  # set new values using values from veg_wider for later geom_segment
   transmute(year_month = year_month,
-         x_native = x,
-         x_native_end = x + ((perc_native * x_range) / 10),
-         y_native = y,
-         y_native_end = y + ((perc_native * y_range) / 10),
-         native_label = perc_native * 10,
-         x_nonnative = x_native_end,
-         x_nonnative_end = xend,
-         y_nonnative = y_native_end,
-         y_nonnative_end = yend)
+           # set starting x coord for native
+           x_native = x,
+           # set ending x coord for native
+           x_native_end = x + ((perc_native * x_range) / 10),
+           # set starting y coord for native
+           y_native = y,
+           # set ending y coord for native
+           y_native_end = y + ((perc_native * y_range) / 10),
+           # set starting x coord for nonnative
+           x_nonnative = x_native_end,
+           # set ending x coord for nonnative
+           x_nonnative_end = xend,
+           # set starting y coord for nonnative
+           y_nonnative = y_native_end,
+           # set ending y coord for nonnative
+           y_nonnative_end = yend)
 ```
 
 # Problems
@@ -153,28 +197,39 @@ Make sure all your code is annotated, and that the output is showing.
 At the end of this section, include code to save your final figure as a .jpg or .png file.
 
 ```{r}
-year_labels <- veg_wider %>%
+#| label: year-labels
+# create a new object from veg_wider
+year_labels <- veg_wider |> 
+  # create new columns for year_month text positioning, set x coord
   mutate(x = sin(len) * 11,
+         # set y coord
          y = cos(len) * 11,
+         # set text angle
          angle = c(seq(90, 0, length.out = 10),
-                   seq(360, 270, length.out = 9))) %>%
+                   seq(360, 270, length.out = 9))) |>
+  # select columns of interest
   select(year_month, x, y, angle)
 
 ```
 
 ```{r}
+#| label: titles
+# create a new object for titles
 titles <- tibble(
   x = -1,
   y = 0, 
-  label = "<span style='color:white;font-size:30pt'>**Native Vegetation Cover<br>
+  # text to be shown
+  label = "<span style='color:white;font-size:30pt'>**Vegetation Cover<br>
   across NCOS**</span><br>
 <span style='color:white;font-size:18pt'>*2021 - 2025*</span><br><br>
-<span style='color:white;font-size:12pt'>The proportion of vegetation cover that is<br><span style='color:#4CAF50'>native</span> has fluctuated over time, being lower on average<br>during early summer months.</span>."
+<span style='color:white;font-size:12pt'>The proportion of <span style='color:#4CAF50'>native</span> vegetation cover<br>has fluctuated over time, being lower on<br>average during early summer months.</span>."
 )
 
 ```
 
-```{r}
+```{r fig.width=8, fig.height=9}
+#| label: veg-plot
+# base layer: ggplot
 ggplot(data = final_veg) + 
   # native lines 
   geom_segment(aes(x = x_native, y = y_native,
@@ -186,7 +241,7 @@ ggplot(data = final_veg) +
                  xend = x_nonnative_end, yend = y_nonnative_end),
                size = 2,
                color = "#e5e3dc") + 
-  # Title
+  # title
   geom_richtext(data = titles,
                 aes(x = x, y = y, label = label),
                 family = "Literata",
@@ -199,13 +254,20 @@ ggplot(data = final_veg) +
                 angle = angle),
             family = "Literata",
             color = "white") +
+  # set x scale limit
   xlim(-15, 11) +
+  # add caption
   labs(caption = "Source: Cheadle Center for Biodiversity and Ecological Restoration | Viz: Henderson Vo | Template: Ijeamaka Anyene - @ijeamaka_a") +
   coord_fixed() +
+  # change theme
   theme_void() +
+  # customize theme, set margin color
   theme(plot.background = element_rect(fill = "#33494f"),
+        # set margin dimensions
         plot.margin = margin(4, 4, 4, 4, unit = "pt"),
+        # set background color
         panel.background = element_rect(fill = "#33494f"),
+        # settings for caption
         plot.caption = element_text(color = "white",
                                     family = "Literata",
                                     size = 7)
@@ -214,10 +276,16 @@ ggplot(data = final_veg) +
 ```
 
 ```{r}
+#| label: saving-image
+# save plot as image
 ggsave("2026_05_ncos.png", 
+       # save last plot
        plot = last_plot(), 
-       device = "png", 
+       # as .png
+       device = "png",
+       # in outputs folder
        path = here("outputs"),
+       # dimensions
        width = 8, 
        height = 6)
 
@@ -230,7 +298,7 @@ In 1-3 sentences each, describe:
 - your process of using someone else’s code to create a visualization
   - I first looked at Ijeamaka Anyene's code to see how she structured her dataset, so that I could also structure my data the same way. I then went through different wrangling steps to match the structure of the hbcu data so that I would be able to reuse the rest of the code. From there, it was a matter to changing labels to describe the vegetation dataset and the trends from it.  
 - challenges you encountered as you made your visualization
-  - Wrangling the vegetation dataset was definitely the most difficult part because I had to mentally work backwards from the variables I knew I needed at the end. The caption (which is still not perfect) was also difficult to format since I am not familiar with html scripting or the richtext geometry. 
+  - Wrangling the vegetation dataset was definitely the most difficult part because I had to mentally work backwards from the variables I knew I needed at the end. The caption was also difficult to format since I am not familiar with html scripting or the richtext geometry. 
 - how your visualization differs from visualizations you made in class, for assignments, or for a previous elective
   - One major way that this visualization differs from class visualizations is that this one doesn't use obvious axes; it's like a column plot but it's curved around a central point. There is also much more flexibility with titling and captioning using the richtext geometry than the traditional `labs()`. 
 
