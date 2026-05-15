@@ -1,7 +1,7 @@
 # ENVS 193DD Intermediate Elective 2
 
 # General information
-This repository contains data and code to visualize relative native vs. non-native vegetation cover at North Campus Open Space. It also contains code from Ijeamaka Anyene’s [“Historically Black Colleges and Universities”](https://github.com/Ijeamakaanyene/tidytuesday) visualization, which was used as inspiration for the vegetation visualization.
+This repository contains data and code to visualize relative native vs. non-native vegetation cover at North Campus Open Space. It also contains (edited) code from Ijeamaka Anyene’s [“Historically Black Colleges and Universities”](https://github.com/Ijeamakaanyene/tidytuesday) visualization, which was used as inspiration for the vegetation visualization.
 
 To work with the code in this repository, you will need the following packages:
 
@@ -17,7 +17,7 @@ library(showtext)
 ```
 ├── README.md
 ├── code                                          
-│   ├── 2021_04_hbcu.Rmd                          # Anyene’s hbcu viz (comes with repo)
+│   ├── 2021_04_hbcu.Rmd                          # Anyene’s hbcu viz (personal edits made)
 │   ├── 2021_04_hbcu.html
 |   ├── vo-henderson_intermediate-elective-02.qmd # Vegetation viz
 |   └── vo-henderson_intermediate-elective-02.pdf
