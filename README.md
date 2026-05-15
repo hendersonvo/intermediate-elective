@@ -3,7 +3,7 @@
 # General information
 This repository contains data and code to visualize relative native vs. non-native vegetation cover at North Campus Open Space. It also contains code from Ijeamaka Anyene’s [“Historically Black Colleges and Universities”](https://github.com/Ijeamakaanyene/tidytuesday) visualization, which was used as inspiration for the vegetation visualization.
 
-to work with the code in this repository, you will need the following packages:
+To work with the code in this repository, you will need the following packages:
 
 ```
 library(tidyverse)
